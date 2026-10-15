@@ -4,11 +4,11 @@ cask "offscreen" do
   app "Offscreen.app"
   binary "offscreen", target: "ofs"
 
-  version "0.0.3"
+  version "0.0.4"
 
   on_macos do
     on_arm do
-      sha256 "c1b6149d17f7ca1a6a33ce9ea2042d61f5c60e680c83d124b2486e401ecc7be3"
+      sha256 "bf56f1687be66c06c4add54b453c85ec692004a0782e6976c146568384b1e520"
       url "https://github.com/markphelps/offscreen/releases/download/v#{version}/offscreen_#{version}_darwin_arm64.tar.gz"
     end
   end
@@ -42,6 +42,15 @@ cask "offscreen" do
     unless result.success?
       opoo "offscreen daemon install failed; run it again to fix it."
     end
+    # An upgrade's uninstall unloads the Start at Login job, and macOS
+    # won't start a new build from the old registration. If Start at
+    # Login is on, this starts a detached renewal that waits for brew to
+    # exit, since brew's purge of the old version removes macOS's record
+    # first; launchd then starts the new Offscreen. Otherwise it does
+    # nothing. It always exits 0.
+    system_command "#{appdir}/Offscreen.app/Contents/MacOS/Offscreen",
+                   args:         ["--renew-start-at-login"],
+                   print_stderr: true
   end
 
   uninstall_preflight do
@@ -51,6 +60,7 @@ cask "offscreen" do
   end
 
   uninstall launchctl: [
+      "io.latentsignal.offscreen",
       "io.latentsignal.offscreend",
     ],
     quit: [
@@ -67,8 +77,11 @@ cask "offscreen" do
     quarantine attribute from offscreen, offscreend and Offscreen.app so
     macOS opens them.
 
-    To start Offscreen at login, add Offscreen.app in System Settings >
-    General > Login Items & Extensions > Open at Login.
+    To start Offscreen at login, turn on Start at Login in its menu.
+    launchd then also relaunches it if it crashes. If you added Offscreen
+    to Open at Login in System Settings by hand, remove that entry. An
+    upgrade renews Start at Login and starts the new version about 25
+    seconds after brew finishes. Turn Start at Login off before brew uninstall.
 
     After an upgrade, macOS may ask again for Local Network, Notifications
     or Input Monitoring. Grant them in System Settings > Privacy & Security.
