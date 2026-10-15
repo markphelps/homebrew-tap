@@ -4,11 +4,11 @@ cask "offscreen" do
   app "Offscreen.app"
   binary "offscreen", target: "ofs"
 
-  version "0.0.2"
+  version "0.0.3"
 
   on_macos do
     on_arm do
-      sha256 "79c8818fb749edb3036a4f3e815f3d777f512e79fee0167028f9eec3d5669594"
+      sha256 "c1b6149d17f7ca1a6a33ce9ea2042d61f5c60e680c83d124b2486e401ecc7be3"
       url "https://github.com/markphelps/offscreen/releases/download/v#{version}/offscreen_#{version}_darwin_arm64.tar.gz"
     end
   end
